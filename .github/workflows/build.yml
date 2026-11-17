@@ -1,0 +1,27 @@
+name: Build Resistor Lens
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Expand the v7 project
+        run: unzip -q ResistorLens_macOS_v7.zip
+      - name: Compile universal macOS app
+        working-directory: ResistorLens_v7
+        run: |
+          xcodebuild -project ResistorLens.xcodeproj -target ResistorLens -configuration Release ARCHS="arm64 x86_64" ONLY_ACTIVE_ARCH=NO CODE_SIGN_IDENTITY="-" CONFIGURATION_BUILD_DIR="$RUNNER_TEMP/products" build
+          app="$RUNNER_TEMP/products/ResistorLens.app"
+          lipo -verify_arch arm64 x86_64 "$app/Contents/MacOS/ResistorLens"
+          codesign --verify --strict "$app"
+          ditto -c -k --keepParent "$app" "$GITHUB_WORKSPACE/ResistorLens-v7.zip"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ResistorLens-macOS-v7
+          path: ResistorLens-v7.zip
+          if-no-files-found: error
