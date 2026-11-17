@@ -17,7 +17,7 @@ jobs:
         run: |
           xcodebuild -project ResistorLens.xcodeproj -target ResistorLens -configuration Release ARCHS="arm64 x86_64" ONLY_ACTIVE_ARCH=NO CODE_SIGN_IDENTITY="-" CONFIGURATION_BUILD_DIR="$RUNNER_TEMP/products" build
           app="$RUNNER_TEMP/products/ResistorLens.app"
-          lipo -verify_arch arm64 x86_64 "$app/Contents/MacOS/ResistorLens"
+          lipo "$app/Contents/MacOS/ResistorLens" -verify_arch arm64 x86_64
           codesign --verify --strict "$app"
           ditto -c -k --keepParent "$app" "$GITHUB_WORKSPACE/ResistorLens-v7.zip"
       - uses: actions/upload-artifact@v4
